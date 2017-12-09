@@ -1,0 +1,204 @@
+<template>
+  <div>
+    <div class="layout-breadcrumb">
+      <Breadcrumb>
+        <BreadcrumbItem href="/">Home</BreadcrumbItem>
+        <BreadcrumbItem href="/cluster">cluster</BreadcrumbItem>
+        <BreadcrumbItem href="#">{{ tag }}</BreadcrumbItem>
+      </Breadcrumb>
+    </div>
+    <div class="layout-content">
+      <div class="layout-content-main">
+        <div> <h3>机器管理列表</h3><br/> </div>
+        <Table :loading="loading" :data="tableData" :columns="tableColumns" stripe></Table>
+        <div style="margin: 10px;overflow: hidden">
+          <div style="float: right;">
+            <Page :total="1" :current="1" @on-change="changePage"></Page>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import {formatDate} from '../common/utils'
+  const alertColor = 'red'
+  const warnColor = 'yellow'
+  const normalColor = 'green'
+  export default {
+    props: ['tag'],
+    name: 'SlaveList',
+    data: function () {
+      return {
+        loading: false,
+        allSlaves: [],
+        tableData: [],
+        tableColumns: [
+          {
+            title: '机器地址',
+            key: 'url',
+            render: (h, param) => {
+              return h('a', {
+                props: { },
+                on: {
+                  click: () => {
+                    this.showRunners(param)
+                  }
+                }
+              }, param.row.url)
+            }
+          },
+          {
+            title: '所属集群',
+            key: 'tag'
+          },
+          {
+            title: '机器状态',
+            key: 'slaveStatus',
+            render: (h, param) => {
+              return h('Tag', {
+                props: {
+                  type: 'dot',
+                  color: param.row.color
+                },
+                style: {
+                  border: '0px !important',
+                  background: 'transparent !important'
+                }
+              }, param.row.status)
+            }
+          },
+          {
+            title: '心跳时间',
+            key: 'lastTouch'
+          },
+          {
+            title: '操作',
+            key: 'slavesMgr',
+            align: 'center',
+            width: 200,
+            render: (h, param) => {
+              return h('ButtonGroup', [
+                h('Button', {
+                  props: {
+                    type: 'ghost',
+                    icon: 'compose'
+                  },
+                  on: {
+                    click: () => {
+                      this.renameSlave(param)
+                    }
+                  }
+                }),
+                h('Button', {
+                  props: {
+                    type: 'ghost',
+                    icon: 'plus'
+                  },
+                  on: {
+                    click: () => {
+                      this.addRunner(param)
+                    }
+                  }
+                }),
+                h('Button', {
+                  props: {
+                    type: 'ghost',
+                    icon: 'trash-a'
+                  },
+                  on: {
+                    click: () => {
+                      this.removeSlave(param)
+                    }
+                  }
+                })
+              ])
+            }
+          }
+        ],
+        statusTags: {
+          'ok': normalColor,
+          'bad': warnColor,
+          'lost': alertColor
+        }
+      }
+    },
+    created: function () {
+      this.fetchData()
+    },
+    watch: {
+      '$route': 'fetchData'
+    },
+    methods: {
+      fetchData () {
+        let that = this
+        that.loading = true
+        that.request('getClusterSlaves', { url: '', tag: that.tag }, function (data) {
+          let allSlaves = []
+          data.forEach((ele) => {
+            let color = normalColor
+            if (ele['status'] in that.statusTags) {
+              color = that.statusTags[ele['status']]
+            }
+            let lastTouch = ele['last_touch']
+            let crtTime = formatDate(new Date(lastTouch), 'yyyy-MM-dd hh:mm:ss')
+
+            allSlaves.push({url: ele['url'], tag: ele['tag'], status: ele['status'], color: color, lastTouch: crtTime})
+          })
+          that.allSlaves = allSlaves
+          that.mockTableData(1)
+          that.loading = false
+          that.total = that.allSlaves.length / 10 + that.allSlaves.length % 10
+        }, function () {
+          that.loading = false
+        }, '', '拉取收集器状态失败')
+      },
+      mockTableData (page) {
+        let tableData = []
+        if (page < 0) page = 0
+        for (let i = (page - 1) * 10; i < page * 10 && i < this.allSlaves.length; i++) {
+          tableData.push(this.allSlaves[i])
+        }
+        this.tableData = tableData
+      },
+      changePage (curPage) {
+        this.mockTableData(curPage)
+      },
+      showRunners (param) {
+        let httpCount = 7
+        let url = param.row.url
+        let tag = param.row.tag
+        if (url.substring(0, httpCount) === 'http://') {
+          url = url.substring(7)
+        }
+        this.$router.push('/cluster/' + tag + '/' + url)
+      },
+      renameSlave (param) {
+        console.info(param.row.tag, param.row.url)
+      },
+      addRunner (param) {
+        console.info(param.row.tag, param.row.url)
+      },
+      removeSlave (param) {
+        console.info(param.row.tag, param.row.url)
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  .layout-breadcrumb{
+    padding: 10px 15px 0;
+  }
+  .layout-content{
+    min-height: 200px;
+    margin: 15px;
+    overflow: hidden;
+    background: #fff;
+    border-radius: 4px;
+  }
+  .layout-content-main{
+    padding: 10px;
+  }
+</style>
