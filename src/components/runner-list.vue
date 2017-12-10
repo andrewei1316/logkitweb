@@ -84,6 +84,7 @@
             title: '查看',
             key: 'show',
             align: 'center',
+            width: 80,
             render: (h, param) => {
               let count = 0
               let errors = param.row.runnerError
@@ -150,6 +151,7 @@
             title: '操作',
             key: 'opt',
             align: 'center',
+            width: 80,
             render: (h, param) => {
               return h('Dropdown', {
                 props: {

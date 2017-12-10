@@ -16,5 +16,11 @@ export default {
         tag: param.tag
       }
     }
+  },
+  logkitVersion: {
+    url: 'logkit/version',
+    params: () => {
+      return {}
+    }
   }
 }

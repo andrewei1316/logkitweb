@@ -17,6 +17,9 @@ export default {
     },
     getSlavesRunnerStatus: (opt, param) => {
       return getFactory(API.slavesRunnerStatus)(param)
+    },
+    getLogkitVersion: (opt) => {
+      return getFactory(API.logkitVersion)()
     }
   }
 }

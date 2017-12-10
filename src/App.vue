@@ -1,7 +1,7 @@
 <template>
   <div class="layout">
     <Menu mode="horizontal" theme="dark" active-name="1">
-      <div class="layout-logo"><img :src="imgUrl"/></div>
+      <div class="layout-logo"><a href="/"><img :src="imgUrl"/></a></div>
       <div class="layout-nav">
         <MenuItem name="cluster" @click.native="onClick('cluster')">
           <Icon type="ios-navigate" href="/cluster"></Icon>
@@ -16,6 +16,7 @@
           收集器列表
         </MenuItem>
       </div>
+      <div class="layout-version">logkit 版本: {{ version }}</div>
     </Menu>
     <div class="layout-breadcrumb">
       <Breadcrumb>
@@ -43,11 +44,16 @@
     data: function () {
       return {
         bread: [],
+        version: '',
         imgUrl: '../../static/logkit100.png'
       }
     },
     created: function () {
       this.updateBread()
+      let that = this
+      this.request('getLogkitVersion', {}, function (data) {
+        that.version = data.version
+      }, function () {}, '', '获取 logkit version 失败')
     },
     watch: {
       '$route': 'updateBread'
@@ -89,6 +95,12 @@
   .layout-nav{
     width: 420px;
     margin: 0 auto;
+  }
+  .layout-version {
+    float: right;
+    color: #bbbec4;
+    font-size: 16px;
+    margin-right: 20px;
   }
   .layout-breadcrumb{
     padding: 10px 15px 0;
