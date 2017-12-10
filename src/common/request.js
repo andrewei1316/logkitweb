@@ -20,7 +20,7 @@ module.exports.install = function (Vue) {
     }, (resp) => {
       this.$Notice.error({
         title: errorMsg,
-        desc: resp
+        desc: resp.body
       })
       errorFunc()
     })

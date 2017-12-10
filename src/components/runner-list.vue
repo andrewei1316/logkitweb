@@ -86,9 +86,13 @@
             align: 'center',
             width: 80,
             render: (h, param) => {
-              let count = 0
+              let color = 'black'
+              let type = 'checkmark-circled'
               let errors = param.row.runnerError
-              if (errors.parser + errors.reader + errors.sender !== '') count++
+              if (errors.parser + errors.reader + errors.sender !== '') {
+                color = 'red'
+                type = 'information-circled'
+              }
               return h('Dropdown', {
                 props: {
                   transfer: true,
@@ -101,48 +105,48 @@
                   }
                 }
               }, [
-                h('Badge', {
-                  props: {
-                    dot: true,
-                    count: count
+                h('a', {
+                  attr: {
+                    href: 'javascript:void(0)'
                   }
                 }, [
-                  h('a', {
-                    attr: {
-                      href: 'javascript:void(0)'
+                  h('Icon', {
+                    props: {
+                      size: 20,
+                      color: color,
+                      type: 'navicon'
                     }
-                  }, [
-                    h('Icon', {
-                      props: {
-                        size: 20,
-                        color: 'black',
-                        type: 'navicon-round'
-                      }
-                    })
-                  ])
+                  })
                 ]),
                 h('DropdownMenu', {
                   slot: 'list'
                 }, [
                   h('DropdownItem', {
                     props: {
-                      name: 'errors'
+                      name: 'config'
                     }
                   }, [
-                    h('Badge', {
+                    h('Icon', {
                       props: {
-                        dot: true,
-                        count: count
+                        type: 'document-text'
                       }
-                    }, [
-                      h('p', '错误日志')
-                    ])
+                    }),
+                    h('span', ' 配置文件')
                   ]),
                   h('DropdownItem', {
                     props: {
-                      name: 'config'
+                      divided: true,
+                      name: 'errors'
                     }
-                  }, '配置文件')
+                  }, [
+                    h('Icon', {
+                      props: {
+                        type: type,
+                        color: color
+                      }
+                    }),
+                    h('span', ' 错误日志')
+                  ])
                 ])
               ])
             }
@@ -174,7 +178,7 @@
                     props: {
                       size: 20,
                       color: 'black',
-                      type: 'navicon-round'
+                      type: 'navicon'
                     }
                   })
                 ]),
@@ -185,25 +189,53 @@
                     props: {
                       name: 'update'
                     }
-                  }, '更新收集器'),
+                  }, [
+                    h('Icon', {
+                      props: {
+                        type: 'edit'
+                      }
+                    }),
+                    h('span', ' 更新收集器')
+                  ]),
                   h('DropdownItem', {
                     props: {
                       divided: true,
                       name: 'startStop'
                     }
-                  }, param.row.runningStatus === 'running' ? '关闭收集器' : '开启收集器'),
+                  }, [
+                    h('Icon', {
+                      props: {
+                        type: param.row.runningStatus === 'running' ? 'stop' : 'play'
+                      }
+                    }),
+                    h('span', param.row.runningStatus === 'running' ? ' 关闭收集器' : ' 开启收集器')
+                  ]),
                   h('DropdownItem', {
                     props: {
                       divided: true,
                       name: 'reset'
                     }
-                  }, '重置收集器'),
+                  }, [
+                    h('Icon', {
+                      props: {
+                        type: 'refresh'
+                      }
+                    }),
+                    h('span', ' 重置收集器')
+                  ]),
                   h('DropdownItem', {
                     props: {
                       divided: true,
                       name: 'delete'
                     }
-                  }, '删除收集器')
+                  }, [
+                    h('Icon', {
+                      props: {
+                        type: 'trash-a'
+                      }
+                    }),
+                    h('span', ' 删除收集器')
+                  ])
                 ])
               ])
             }
