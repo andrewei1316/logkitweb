@@ -10,6 +10,8 @@ Vue.use(Router)
 export default new Router({
   routes: [
     {path: '/', components: { main: Home }},
+    {path: '/slaves', components: { main: SlaveList }},
+    {path: '/runners', components: { main: RunnerList }},
     {path: '/cluster', components: { main: ClusterList }},
     {path: '/cluster/:tag', components: { main: SlaveList }, props: {main: true}},
     {path: '/cluster/:tag/:url', components: { main: RunnerList }, props: {main: true}}

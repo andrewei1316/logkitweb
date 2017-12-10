@@ -1,21 +1,10 @@
 <template>
   <div>
-    <div class="layout-breadcrumb">
-      <Breadcrumb>
-        <BreadcrumbItem href="/">Home</BreadcrumbItem>
-        <BreadcrumbItem href="/cluster">cluster</BreadcrumbItem>
-        <BreadcrumbItem href="#">{{ tag }}</BreadcrumbItem>
-      </Breadcrumb>
-    </div>
-    <div class="layout-content">
-      <div class="layout-content-main">
-        <div> <h3>机器管理列表</h3><br/> </div>
-        <Table :loading="loading" :data="tableData" :columns="tableColumns" stripe></Table>
-        <div style="margin: 10px;overflow: hidden">
-          <div style="float: right;">
-            <Page :total="1" :current="1" @on-change="changePage"></Page>
-          </div>
-        </div>
+    <div> <h3>机器管理列表</h3><br/> </div>
+    <Table :loading="loading" :data="tableData" :columns="tableColumns" stripe></Table>
+    <div style="margin: 10px;overflow: hidden">
+      <div style="float: right;">
+        <Page :total="1" :current="1" @on-change="changePage"></Page>
       </div>
     </div>
   </div>
@@ -188,17 +177,4 @@
 </script>
 
 <style scoped>
-  .layout-breadcrumb{
-    padding: 10px 15px 0;
-  }
-  .layout-content{
-    min-height: 200px;
-    margin: 15px;
-    overflow: hidden;
-    background: #fff;
-    border-radius: 4px;
-  }
-  .layout-content-main{
-    padding: 10px;
-  }
 </style>

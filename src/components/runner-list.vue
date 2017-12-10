@@ -1,26 +1,13 @@
 <template>
   <div>
-    <div class="layout-breadcrumb">
-      <Breadcrumb>
-        <BreadcrumbItem href="/">Home</BreadcrumbItem>
-        <BreadcrumbItem href="/cluster">cluster</BreadcrumbItem>
-        <BreadcrumbItem :href="clusterUrl">{{ tag }}</BreadcrumbItem>
-        <BreadcrumbItem href="#">{{ url }}</BreadcrumbItem>
-      </Breadcrumb>
-    </div>
-    <div class="layout-content">
-      <div class="layout-content-main">
-        <div> <h3>收集器管理列表</h3><br/> </div>
-        <Table :loading="loading" :data="tableData" :columns="tableColumns" stripe></Table>
-        <div style="margin: 10px;overflow: hidden">
-          <div style="float: right;">
-            <Page :total="10" :current="1" @on-change="changePage"></Page>
-          </div>
-        </div>
+    <div> <h3>收集器管理列表</h3><br/> </div>
+    <Table :loading="loading" :data="tableData" :columns="tableColumns" stripe></Table>
+    <div style="margin: 10px;overflow: hidden">
+      <div style="float: right;">
+        <Page :total="10" :current="1" @on-change="changePage"></Page>
       </div>
     </div>
   </div>
-
 </template>
 
 <script>
@@ -35,19 +22,19 @@
         tableColumns: [],
         tableColumnsData: [
           {
-            title: '收集器名称',
+            title: '名称',
             key: 'name'
           },
           {
-            title: '所属集群',
+            title: '集群',
             key: 'tag'
           },
           {
-            title: '所属机器',
+            title: '机器',
             key: 'url'
           },
           {
-            title: '运行时间',
+            title: '运行时长',
             key: 'elaspedTime'
           },
           {
@@ -94,109 +81,128 @@
             key: 'senderSpeed'
           },
           {
-            title: '错误日志',
-            key: 'runnerError',
+            title: '查看',
+            key: 'show',
             align: 'center',
-            width: 86,
             render: (h, param) => {
-              let type = 'checkmark-circled'
-              let color = 'Light Primary'
+              let count = 0
               let errors = param.row.runnerError
-              if (errors.parser + errors.reader + errors.sender !== '') {
-                type = 'information-circled'
-                color = 'red'
-              }
-              return h('Span', {
+              if (errors.parser + errors.reader + errors.sender !== '') count++
+              return h('Dropdown', {
+                props: {
+                  transfer: true,
+                  trigger: 'hover',
+                  placement: 'bottom'
+                },
                 on: {
-                  click: () => {
-                    this.showRunnerErrors(errors)
+                  'on-click': (name) => {
+                    this.showDetail(name, param)
                   }
                 }
               }, [
-                h('Icon', {
+                h('Badge', {
                   props: {
-                    type: type,
-                    size: 22,
-                    color: color
+                    dot: true,
+                    count: count
                   }
-                })
-              ])
-            }
-          },
-          {
-            title: '查看配置',
-            key: 'runnerConfig',
-            align: 'center',
-            width: 86,
-            render: (h, param) => {
-              return h('Span', {
-                on: {
-                  click: () => {
-                    this.showRunnerConfig(param)
-                  }
-                }
-              }, [
-                h('Icon', {
-                  props: {
-                    type: 'document-text',
-                    size: 22,
-                    color: 'Light Primary'
-                  }
-                })
+                }, [
+                  h('a', {
+                    attr: {
+                      href: 'javascript:void(0)'
+                    }
+                  }, [
+                    h('Icon', {
+                      props: {
+                        size: 20,
+                        color: 'black',
+                        type: 'navicon-round'
+                      }
+                    })
+                  ])
+                ]),
+                h('DropdownMenu', {
+                  slot: 'list'
+                }, [
+                  h('DropdownItem', {
+                    props: {
+                      name: 'errors'
+                    }
+                  }, [
+                    h('Badge', {
+                      props: {
+                        dot: true,
+                        count: count
+                      }
+                    }, [
+                      h('p', '错误日志')
+                    ])
+                  ]),
+                  h('DropdownItem', {
+                    props: {
+                      name: 'config'
+                    }
+                  }, '配置文件')
+                ])
               ])
             }
           },
           {
             title: '操作',
-            key: 'slavesMgr',
+            key: 'opt',
             align: 'center',
-            width: 260,
             render: (h, param) => {
-              return h('ButtonGroup', [
-                h('Button', {
-                  props: {
-                    type: 'ghost',
-                    icon: 'edit'
-                  },
-                  on: {
-                    click: () => {
-                      this.updateRunner(param)
-                    }
+              return h('Dropdown', {
+                props: {
+                  trigger: 'hover',
+                  placement: 'bottom',
+                  transfer: true
+                },
+                on: {
+                  'on-click': (name) => {
+                    this.runnerManger(name, param)
                   }
-                }),
-                h('Button', {
-                  props: {
-                    type: 'ghost',
-                    icon: param.row.statusIcon
-                  },
-                  on: {
-                    click: () => {
-                      this.startStopRunner(param)
-                    }
+                }
+              }, [
+                h('a', {
+                  attr: {
+                    href: 'javascript:void(0)'
                   }
-                }),
-                h('Button', {
-                  props: {
-                    type: 'ghost',
-                    icon: 'refresh'
-                  },
-                  on: {
-                    click: () => {
-                      this.resetRunner(param)
+                }, [
+                  h('Icon', {
+                    props: {
+                      size: 20,
+                      color: 'black',
+                      type: 'navicon-round'
                     }
-                  }
-                }),
-                h('Button', {
-                  props: {
-                    type: 'ghost',
-                    icon: 'trash-a'
-                  },
-                  on: {
-                    click: () => {
-                      this.removeRunner(param)
+                  })
+                ]),
+                h('DropdownMenu', {
+                  slot: 'list'
+                }, [
+                  h('DropdownItem', {
+                    props: {
+                      name: 'update'
                     }
-                  }
-                })
+                  }, '更新收集器'),
+                  h('DropdownItem', {
+                    props: {
+                      divided: true,
+                      name: 'startStop'
+                    }
+                  }, param.row.runningStatus === 'running' ? '关闭收集器' : '开启收集器'),
+                  h('DropdownItem', {
+                    props: {
+                      divided: true,
+                      name: 'reset'
+                    }
+                  }, '重置收集器'),
+                  h('DropdownItem', {
+                    props: {
+                      divided: true,
+                      name: 'delete'
+                    }
+                  }, '删除收集器')
+                ])
               ])
             }
           }
@@ -264,7 +270,8 @@
         }, '', '拉取收集器状态失败')
       },
       addHttpPrefix () {
-        return 'http://' + this.url
+        if (this.url) return 'http://' + this.url
+        return ''
       },
       mockTableData (page) {
         let tableData = []
@@ -280,18 +287,15 @@
       initTableColumns () {
         let tableColumns = []
         this.tableColumnsData.forEach((ele) => {
-          if (this.tag !== '' && ele.key === 'tag') {
+          if (this.tag && ele.key === 'tag') {
             return true
           }
-          if (this.url !== '' && ele.key === 'url') {
+          if (this.url && ele.key === 'url') {
             return true
           }
           tableColumns.push(ele)
         })
         this.tableColumns = tableColumns
-      },
-      showRunnerErrors (errors) {
-        console.info(errors)
       },
       formatSecond (second) {
         let day = Math.floor(second / 3600 / 24)
@@ -313,6 +317,27 @@
         }
         return timeStr
       },
+      runnerManger (name, param) {
+        if (name === 'update') {
+          this.updateRunner(param)
+        } else if (name === 'startStop') {
+          this.startStopRunner(param)
+        } else if (name === 'reset') {
+          this.resetRunner(param)
+        } else if (name === 'delete') {
+          this.deleteRunner(param)
+        }
+      },
+      showDetail (name, param) {
+        if (name === 'errors') {
+          this.showRunnerErrors(param.row.runnerError)
+        } else if (name === 'config') {
+          this.showRunnerConfig(param)
+        }
+      },
+      showRunnerErrors (errors) {
+        console.info(errors)
+      },
       showRunnerConfig (param) {
         console.info(param.row.tag, param.row.url)
       },
@@ -325,7 +350,7 @@
       resetRunner (param) {
         console.info(param.row.tag, param.row.url)
       },
-      removeRunner (param) {
+      deleteRunner (param) {
         console.info(param.row.tag, param.row.url)
       }
     }
@@ -333,17 +358,4 @@
 </script>
 
 <style scoped>
-  .layout-breadcrumb{
-    padding: 10px 15px 0;
-  }
-  .layout-content{
-    min-height: 200px;
-    margin: 15px;
-    overflow: hidden;
-    background: #fff;
-    border-radius: 4px;
-  }
-  .layout-content-main{
-    padding: 10px;
-  }
 </style>
