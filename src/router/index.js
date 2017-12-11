@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from '../components/home'
-import ClusterList from '../components/cluster-list'
-import SlaveList from '../components/slave-list'
-import RunnerList from '../components/runner-list'
+import Home from '../components/Home'
+import ClusterList from '../components/ClusterList'
+import SlaveList from '../components/SlaveList'
+import RunnerList from '../components/RunnerList'
 
 Vue.use(Router)
 
