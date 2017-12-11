@@ -2,23 +2,10 @@
   <div class="layout">
     <Menu mode="horizontal" theme="dark" active-name="1">
       <div class="layout-logo"><a href="/"><img :src="imgUrl"/></a></div>
-      <div class="layout-nav">
-        <MenuItem name="cluster" @click.native="onClick('cluster')">
-          <Icon type="ios-navigate" href="/cluster"></Icon>
-          层级展示
-        </MenuItem>
-        <MenuItem name="slaves" @click.native="onClick('slaves')">
-          <Icon type="ios-keypad"></Icon>
-          机器列表
-        </MenuItem>
-        <MenuItem name="runners" @click.native="onClick('runners')">
-          <Icon type="ios-analytics"></Icon>
-          收集器列表
-        </MenuItem>
-      </div>
+      <NavBar :normal="normal"></NavBar>
       <div class="layout-version">logkit 版本: {{ version }}</div>
     </Menu>
-    <div class="layout-breadcrumb">
+    <div class="layout-breadcrumb" v-if="normal">
       <Breadcrumb>
         <BreadcrumbItem v-for="(u, i) in bread" :href="u.url" :key="i">
           {{ u.name }}
@@ -39,13 +26,16 @@
 </template>
 
 <script>
+  import NavBar from './components/NavBar'
   export default {
     name: 'App',
+    components: {NavBar},
     data: function () {
       return {
         bread: [],
         version: '',
-        imgUrl: '../../static/logkit100.png'
+        normal: false,
+        imgUrl: '/static/logkit100.png'
       }
     },
     created: function () {
@@ -68,9 +58,6 @@
           if (ele !== '') curUrl += '/'
         })
         this.bread = bread
-      },
-      onClick (name) {
-        this.$router.push('/' + name)
       }
     }
   }
@@ -91,10 +78,6 @@
   .layout-logo img {
     width: 110px;
     height: 28px;
-  }
-  .layout-nav{
-    width: 420px;
-    margin: 0 auto;
   }
   .layout-version {
     float: right;
