@@ -16,7 +16,6 @@
   const warnColor = 'yellow'
   const normalColor = 'green'
   export default {
-    props: ['tag'],
     name: 'SlaveList',
     data: function () {
       return {
@@ -123,7 +122,9 @@
       fetchData () {
         let that = this
         that.loading = true
-        that.request('getClusterSlaves', { url: '', tag: that.tag }, function (data) {
+        let url = this.$route.query.url
+        let tag = this.$route.query.tag
+        that.request('getClusterSlaves', { url: url, tag: tag }, function (data) {
           let allSlaves = []
           data.forEach((ele) => {
             let color = normalColor
@@ -155,19 +156,63 @@
         this.mockTableData(curPage)
       },
       showRunners (param) {
-        let httpCount = 7
         let url = param.row.url
         let tag = param.row.tag
-        if (url.substring(0, httpCount) === 'http://') {
-          url = url.substring(7)
-        }
-        this.$router.push('/cluster/' + tag + '/' + url)
+        this.$router.push({name: 'runners', query: {tag: tag, url: url}})
       },
       renameSlave (param) {
         console.info(param.row.tag, param.row.url)
       },
       addRunner (param) {
         console.info(param.row.tag, param.row.url)
+        this.$Modal.info({
+          width: 20,
+          okText: '取消',
+          render: (h) => {
+            return h('Form', {}, [
+              h('FormItem', {}, [
+                h('Button', {
+                  props: {
+                    type: 'primary'
+                  },
+                  on: {
+                    click: () => {
+                      this.$Modal.remove()
+                      this.$router.push({
+                        name: 'create',
+                        query: {
+                          type: 'log',
+                          tag: param.row.tag,
+                          url: param.row.url
+                        }
+                      })
+                    }
+                  }
+                }, '添加日志收集器')
+              ]),
+              h('FormItem', {}, [
+                h('Button', {
+                  props: {
+                    type: 'primary'
+                  },
+                  on: {
+                    click: () => {
+                      this.$Modal.remove()
+                      this.$router.push({
+                        name: 'create',
+                        query: {
+                          type: 'metric',
+                          tag: param.row.tag,
+                          url: param.row.url
+                        }
+                      })
+                    }
+                  }
+                }, '添加系统信息收集器')
+              ])
+            ])
+          }
+        })
       },
       removeSlave (param) {
         console.info(param.row.tag, param.row.url)

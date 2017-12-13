@@ -203,7 +203,9 @@
       fetchData () {
         let that = this
         that.loading = true
-        that.request('getClusterSlaves', { url: '', tag: '' }, function (data) {
+        let url = this.$route.query.url
+        let tag = this.$route.query.tag
+        that.request('getClusterSlaves', { url: url, tag: tag }, function (data) {
           let allSlaves = {}
           data.forEach((ele) => {
             let color = normalColor
@@ -239,7 +241,7 @@
         this.mockTableData(curPage)
       },
       showSlaves (param) {
-        this.$router.push('/cluster/' + param.row.tag)
+        this.$router.push({name: 'slaves', query: {tag: param.row.tag}})
       },
       renameCluster (param) {
         let newTagName = ''
@@ -268,7 +270,50 @@
         console.info(param.row.tag)
       },
       addRunner (param) {
-        console.info(param.row.tag)
+        this.$Modal.info({
+          width: 20,
+          okText: '取消',
+          render: (h) => {
+            return h('Form', {}, [
+              h('FormItem', {}, [
+                h('Button', {
+                  props: {
+                    type: 'primary'
+                  },
+                  on: {
+                    click: () => {
+                      this.$Modal.remove()
+                      this.$router.push({
+                        path: '/cluster/' + param.row.tag + '/create',
+                        param: {
+                          type: 'log'
+                        }
+                      })
+                    }
+                  }
+                }, '添加日志收集器')
+              ]),
+              h('FormItem', {}, [
+                h('Button', {
+                  props: {
+                    type: 'primary'
+                  },
+                  on: {
+                    click: () => {
+                      this.$Modal.remove()
+                      this.$router.push({
+                        path: '/cluster/' + param.row.tag + '/create',
+                        param: {
+                          type: 'metric'
+                        }
+                      })
+                    }
+                  }
+                }, '添加系统信息收集器')
+              ])
+            ])
+          }
+        })
       },
       updateRunner (param) {
         console.info(param.row.tag)

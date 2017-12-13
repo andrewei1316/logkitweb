@@ -2,10 +2,10 @@
   <div class="layout">
     <Menu mode="horizontal" theme="dark" active-name="1">
       <div class="layout-logo"><a href="/"><img :src="imgUrl"/></a></div>
-      <NavBar :normal="normal"></NavBar>
+      <NavBar :model="model"></NavBar>
       <div class="layout-version">logkit 版本: {{ version }}</div>
     </Menu>
-    <div class="layout-breadcrumb" v-if="normal">
+    <div class="layout-breadcrumb" v-if="model === 'show'">
       <Breadcrumb>
         <BreadcrumbItem v-for="(u, i) in bread" :href="u.url" :key="i">
           {{ u.name }}
@@ -34,7 +34,7 @@
       return {
         bread: [],
         version: '',
-        normal: false,
+        model: 'show',
         imgUrl: '/static/logkit100.png'
       }
     },
@@ -51,11 +51,35 @@
     methods: {
       updateBread: function () {
         let bread = []
-        let curUrl = '/'
-        this.$route.fullPath.split('/').map((ele, index) => {
-          curUrl += ele
-          bread.push({url: curUrl, name: index === 0 ? 'Home' : ele})
-          if (ele !== '') curUrl += '/'
+        let tag = this.$route.query.tag
+        let url = this.$route.query.url
+        let fullPath = this.$route.fullPath.split('?')[0]
+        let urlSplit = fullPath.split('/')
+        let curUrl = ''
+        urlSplit.map((ele, index) => {
+          if (ele === 'create') {
+            this.model = 'edit'
+          }
+          console.info(index, ele)
+          if (index === 0) {
+            bread.push({url: '/', name: 'Home'})
+          } else if (index === 1 && ele !== '') {
+            if (tag || url) {
+              curUrl = '/cluster'
+              bread.push({url: curUrl, name: 'cluster'})
+            } else {
+              curUrl = '/' + ele
+              bread.push({url: curUrl, name: ele})
+            }
+            if (tag) {
+              curUrl = '/slaves?tag=' + tag
+              bread.push({url: curUrl, name: tag})
+            }
+            if (url) {
+              curUrl = '/runners?url=' + url
+              bread.push({url: curUrl, name: url})
+            }
+          }
         })
         this.bread = bread
       }

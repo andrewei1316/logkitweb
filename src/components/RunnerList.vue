@@ -12,7 +12,6 @@
 
 <script>
   export default {
-    props: ['tag', 'url'],
     name: 'RunnerList',
     data: function () {
       return {
@@ -257,11 +256,12 @@
     methods: {
       fetchData () {
         this.initTableColumns()
-        let allRunners = []
         let that = this
         that.loading = true
-        let actUrl = that.addHttpPrefix()
-        that.request('getSlavesRunnerStatus', { url: actUrl, tag: that.tag }, function (data) {
+        let url = this.$route.query.url
+        let tag = this.$route.query.tag
+        that.request('getSlavesRunnerStatus', { url: url, tag: tag }, function (data) {
+          let allRunners = []
           for (let url in data) {
             let tag = data[url].tag
             let runnerStatus = data[url].status
@@ -302,10 +302,6 @@
         }, function () {
           that.loading = false
         }, '', '拉取收集器状态失败')
-      },
-      addHttpPrefix () {
-        if (this.url) return 'http://' + this.url
-        return ''
       },
       mockTableData (page) {
         let tableData = []
