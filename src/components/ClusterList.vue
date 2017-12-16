@@ -7,21 +7,31 @@
         <Page :total="1" :current="1" @on-change="changePage"></Page>
       </div>
     </div>
+    <MsgModel
+      v-bind="msgParam"
+      v-on:addRunner="addRunner"
+      v-on:renameCluster="renameCluster"
+      v-on:removeCluster="removeCluster"
+      v-on:selectedRunner="selectedRunner"
+    ></MsgModel>
   </div>
 </template>
 
 <script>
+  import MsgModel from './MsgModal'
   const alertColor = 'red'
   const warnColor = 'yellow'
   const normalColor = 'green'
   export default {
     name: 'ClusterList',
+    components: {MsgModel},
     data: function () {
       return {
         total: 1,
         current: 1,
         loading: false,
         allData: [],
+        msgParam: {},
         tableData: [],
         statusOk: normalColor,
         statusTags: {
@@ -96,7 +106,7 @@
                   },
                   on: {
                     click: () => {
-                      this.renameCluster(param)
+                      this.showModal('renameCluster', param)
                     }
                   }
                 }),
@@ -107,7 +117,7 @@
                   },
                   on: {
                     click: () => {
-                      this.removeCluster(param)
+                      this.showModal('removeCluster', param)
                     }
                   }
                 })
@@ -128,7 +138,7 @@
                   },
                   on: {
                     click: () => {
-                      this.addRunner(param)
+                      this.showModal('addRunner', param)
                     }
                   }
                 }),
@@ -139,7 +149,7 @@
                   },
                   on: {
                     click: () => {
-                      this.updateRunner(param)
+                      this.showSelectedModal('update', param)
                     }
                   }
                 }),
@@ -150,7 +160,7 @@
                   },
                   on: {
                     click: () => {
-                      this.startRunner(param)
+                      this.showSelectedModal('start', param)
                     }
                   }
                 }),
@@ -161,7 +171,7 @@
                   },
                   on: {
                     click: () => {
-                      this.stopRunner(param)
+                      this.showSelectedModal('stop', param)
                     }
                   }
                 }),
@@ -172,7 +182,7 @@
                   },
                   on: {
                     click: () => {
-                      this.resetRunner(param)
+                      this.showSelectedModal('reset', param)
                     }
                   }
                 }),
@@ -183,7 +193,7 @@
                   },
                   on: {
                     click: () => {
-                      this.deleteRunner(param)
+                      this.showSelectedModal('remove', param)
                     }
                   }
                 })
@@ -243,92 +253,48 @@
       showSlaves (param) {
         this.$router.push({name: 'slaves', query: {tag: param.row.tag}})
       },
-      renameCluster (param) {
-        let newTagName = ''
-        this.$Modal.confirm({
-          okText: '确认',
-          cancelText: '取消',
-          onOk: function () {
-            console.info(newTagName)
-          },
-          render: (h) => {
-            return h('Input', {
-              props: {
-                autofocus: true,
-                placeholder: '输入集群新名称...'
-              },
-              on: {
-                input: (val) => {
-                  newTagName = val
-                }
-              }
-            })
-          }
-        })
+      renameCluster (param, clusterName) {
+        console.info(param, clusterName)
       },
       removeCluster (param) {
         console.info(param.row.tag)
       },
-      addRunner (param) {
-        this.$Modal.info({
-          width: 20,
-          okText: '取消',
-          render: (h) => {
-            return h('Form', {}, [
-              h('FormItem', {}, [
-                h('Button', {
-                  props: {
-                    type: 'primary'
-                  },
-                  on: {
-                    click: () => {
-                      this.$Modal.remove()
-                      this.$router.push({
-                        path: '/cluster/' + param.row.tag + '/create',
-                        param: {
-                          type: 'log'
-                        }
-                      })
-                    }
-                  }
-                }, '添加日志收集器')
-              ]),
-              h('FormItem', {}, [
-                h('Button', {
-                  props: {
-                    type: 'primary'
-                  },
-                  on: {
-                    click: () => {
-                      this.$Modal.remove()
-                      this.$router.push({
-                        path: '/cluster/' + param.row.tag + '/create',
-                        param: {
-                          type: 'metric'
-                        }
-                      })
-                    }
-                  }
-                }, '添加系统信息收集器')
-              ])
-            ])
-          }
-        })
+      addRunner (param, runnerType) {
+        console.info(param, runnerType)
       },
-      updateRunner (param) {
-        console.info(param.row.tag)
+      selectedRunner (param, mgrName, runnerName) {
+        if (mgrName === 'update') {
+          this.updateRunner(param, runnerName)
+        } else if (mgrName === 'start') {
+          this.startRunner(param, runnerName)
+        } else if (mgrName === 'stop') {
+          this.stopRunner(param, runnerName)
+        } else if (mgrName === 'reset') {
+          this.resetRunner(param, runnerName)
+        } else if (mgrName === 'remove') {
+          this.removeRunner(param, runnerName)
+        }
       },
-      startRunner (param) {
-        console.info(param.row.tag)
+      updateRunner (param, runnerName) {
+        console.info(param, runnerName)
       },
-      stopRunner (param) {
-        console.info(param.row.tag)
+      startRunner (param, runnerName) {
+        console.info(param, runnerName)
       },
-      resetRunner (param) {
-        console.info(param.row.tag)
+      stopRunner (param, runnerName) {
+        console.info(param, runnerName)
       },
-      deleteRunner (param) {
-        console.info(param.row.tag)
+      resetRunner (param, runnerName) {
+        console.info(param, runnerName)
+      },
+      removeRunner (param, runnerName) {
+        console.info(param, runnerName)
+      },
+      showModal (optName, param) {
+        this.msgParam = {time: new Date(), optName: optName, param: param}
+      },
+      showSelectedModal (mgrName, param) {
+        this.msgParam = {time: new Date(), optName: 'selectRunner', param: param, 'runnerMgrName': mgrName}
       }
     }
   }

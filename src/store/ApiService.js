@@ -12,14 +12,22 @@ function getFactory (api) {
 
 export default {
   actions: {
+    getLogkitVersion: () => {
+      return getFactory(API.logkitVersion)()
+    },
+    getClusterRunners: (opt, param) => {
+      return getFactory(API.runnerList)(param)
+    },
+    getClusterConfig: (opt, param) => {
+      let api = API.clusterConfig
+      api.url = api.uri + ('/' + param.runnerName)
+      return getFactory(api)(param)
+    },
     getClusterSlaves: (opt, param) => {
       return getFactory(API.clusterSlaves)(param)
     },
     getSlavesRunnerStatus: (opt, param) => {
       return getFactory(API.slavesRunnerStatus)(param)
-    },
-    getLogkitVersion: (opt) => {
-      return getFactory(API.logkitVersion)()
     }
   }
 }

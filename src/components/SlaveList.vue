@@ -7,11 +7,18 @@
         <Page :total="1" :current="1" @on-change="changePage"></Page>
       </div>
     </div>
+    <MsgModal
+      v-bind="msgParam"
+      v-on:addRunner="addRunner"
+      v-on:removeSlave="removeSlave"
+      v-on:renameCluster="renameSlave">
+    </MsgModal>
   </div>
 </template>
 
 <script>
   import {formatDate} from '../common/utils'
+  import MsgModal from './MsgModal'
   const alertColor = 'red'
   const warnColor = 'yellow'
   const normalColor = 'green'
@@ -22,6 +29,7 @@
         loading: false,
         allSlaves: [],
         tableData: [],
+        msgParam: {},
         tableColumns: [
           {
             title: '机器地址',
@@ -75,7 +83,7 @@
                   },
                   on: {
                     click: () => {
-                      this.renameSlave(param)
+                      this.showModal('renameCluster', param)
                     }
                   }
                 }),
@@ -86,7 +94,7 @@
                   },
                   on: {
                     click: () => {
-                      this.addRunner(param)
+                      this.showModal('addRunner', param)
                     }
                   }
                 }),
@@ -97,7 +105,7 @@
                   },
                   on: {
                     click: () => {
-                      this.removeSlave(param)
+                      this.showModal('removeSlave', param)
                     }
                   }
                 })
@@ -112,6 +120,7 @@
         }
       }
     },
+    components: {MsgModal},
     created: function () {
       this.fetchData()
     },
@@ -160,62 +169,17 @@
         let tag = param.row.tag
         this.$router.push({name: 'runners', query: {tag: tag, url: url}})
       },
-      renameSlave (param) {
-        console.info(param.row.tag, param.row.url)
+      renameSlave (param, clusterName) {
+        console.info(param, clusterName)
       },
-      addRunner (param) {
-        console.info(param.row.tag, param.row.url)
-        this.$Modal.info({
-          width: 20,
-          okText: '取消',
-          render: (h) => {
-            return h('Form', {}, [
-              h('FormItem', {}, [
-                h('Button', {
-                  props: {
-                    type: 'primary'
-                  },
-                  on: {
-                    click: () => {
-                      this.$Modal.remove()
-                      this.$router.push({
-                        name: 'create',
-                        query: {
-                          type: 'log',
-                          tag: param.row.tag,
-                          url: param.row.url
-                        }
-                      })
-                    }
-                  }
-                }, '添加日志收集器')
-              ]),
-              h('FormItem', {}, [
-                h('Button', {
-                  props: {
-                    type: 'primary'
-                  },
-                  on: {
-                    click: () => {
-                      this.$Modal.remove()
-                      this.$router.push({
-                        name: 'create',
-                        query: {
-                          type: 'metric',
-                          tag: param.row.tag,
-                          url: param.row.url
-                        }
-                      })
-                    }
-                  }
-                }, '添加系统信息收集器')
-              ])
-            ])
-          }
-        })
+      addRunner (param, runnerType) {
+        console.info(param, runnerType)
       },
       removeSlave (param) {
-        console.info(param.row.tag, param.row.url)
+        console.info(param)
+      },
+      showModal (optName, param) {
+        this.msgParam = {time: new Date(), optName: optName, param: param}
       }
     }
   }

@@ -7,14 +7,22 @@
         <Page :total="10" :current="1" @on-change="changePage"></Page>
       </div>
     </div>
+    <MsgModal
+      v-bind="msgParam"
+      v-on:resetRunner="resetRunner"
+      v-on:removeRunner="removeRunner">
+    ></MsgModal>
   </div>
 </template>
 
 <script>
+  import MsgModal from './MsgModal'
   export default {
     name: 'RunnerList',
+    components: {MsgModal},
     data: function () {
       return {
+        msgParam: {},
         loading: false,
         allRunners: [],
         tableData: [],
@@ -88,7 +96,7 @@
               let color = 'black'
               let type = 'checkmark-circled'
               let errors = param.row.runnerError
-              if (errors.parser + errors.reader + errors.sender !== '') {
+              if (errors.parser + errors.reader + errors.sender + errors.logkit !== '') {
                 color = 'red'
                 type = 'information-circled'
               }
@@ -100,7 +108,7 @@
                 },
                 on: {
                   'on-click': (name) => {
-                    this.showDetail(name, param)
+                    this.showModal(name, param)
                   }
                 }
               }, [
@@ -122,7 +130,7 @@
                 }, [
                   h('DropdownItem', {
                     props: {
-                      name: 'config'
+                      name: 'runnerConfig'
                     }
                   }, [
                     h('Icon', {
@@ -135,7 +143,7 @@
                   h('DropdownItem', {
                     props: {
                       divided: true,
-                      name: 'errors'
+                      name: 'logkitErrors'
                     }
                   }, [
                     h('Icon', {
@@ -248,11 +256,6 @@
     watch: {
       '$route': 'fetchData'
     },
-    computed: {
-      clusterUrl: function () {
-        return '/cluster/' + this.tag
-      }
-    },
     methods: {
       fetchData () {
         this.initTableColumns()
@@ -278,16 +281,17 @@
                 createTime: status['createTime'],
                 runningStatus: status['runningStatus'],
                 readDataCount: status['readDataCount'],
-                readSpeed: status['readspeed'],
-                readSpeedKb: status['readspeed_kb'],
+                readSpeed: status['readspeed'].toFixed(2),
+                readSpeedKb: status['readspeed_kb'].toFixed(2),
                 readSpeedTrend: status['readspeedtrend'],
                 readSpeedTrendKb: status['readspeedtrend_kb'],
                 parserTrend: status['parserStats']['trend'],
                 parserCount: status['parserStats']['success'] + '/' + (status['parserStats']['success'] + status['parserStats']['errors']),
                 senderTrend: sender === undefined ? 'stable' : sender['trend'],
                 senderCount: sender === undefined ? '0/0' : (sender['success'] + '/' + (sender['success'] + sender['errors'])),
-                senderSpeed: sender === undefined ? '0' : sender['speed'],
+                senderSpeed: sender === undefined ? '0' : sender['speed'].toFixed(2),
                 runnerError: {
+                  logkit: '',
                   reader: status['readerStats']['last_error'],
                   parser: status['parserStats']['last_error'],
                   sender: sender === undefined ? '' : sender['last_error']
@@ -353,23 +357,13 @@
         } else if (name === 'startStop') {
           this.startStopRunner(param)
         } else if (name === 'reset') {
-          this.resetRunner(param)
+          this.showModal('resetRunner', param)
         } else if (name === 'delete') {
-          this.deleteRunner(param)
+          this.showModal('removeRunner', param)
         }
       },
-      showDetail (name, param) {
-        if (name === 'errors') {
-          this.showRunnerErrors(param.row.runnerError)
-        } else if (name === 'config') {
-          this.showRunnerConfig(param)
-        }
-      },
-      showRunnerErrors (errors) {
-        console.info(errors)
-      },
-      showRunnerConfig (param) {
-        console.info(param.row.tag, param.row.url)
+      showModal (optName, param) {
+        this.msgParam = {time: new Date(), optName: optName, param: param}
       },
       updateRunner (param) {
         console.info(param.row.tag, param.row.url)
@@ -380,7 +374,7 @@
       resetRunner (param) {
         console.info(param.row.tag, param.row.url)
       },
-      deleteRunner (param) {
+      removeRunner (param) {
         console.info(param.row.tag, param.row.url)
       }
     }
