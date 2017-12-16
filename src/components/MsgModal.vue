@@ -177,15 +177,14 @@
           this.runnerName = ''
           let url = this.param.row.url
           let tag = this.param.row.tag
-          this.selectRunnerModal = true
           this.selectedRunnerTitle = this.getSelectedTitle()
           that.request('getClusterRunners', { url: url, tag: tag }, function (data) {
-            console.info(data)
             that.runnerList = data
             that.loading = false
           }, function () {
             that.loading = false
-          }, '', '拉取收集器里列表失败')
+          }, '', '拉取收集器列表失败')
+          this.selectRunnerModal = true
         } else if (this.optName === 'runnerConfig') {
           let that = this
           this.loading = true
@@ -193,15 +192,14 @@
           let rn = this.param.row.name
           let url = this.param.row.url
           let tag = this.param.row.tag
-          this.showRunnerConfigModal = true
           that.request('getClusterConfig', { url: url, tag: tag, runnerName: rn }, function (data) {
             let jsonHtml = that.syntaxHighlight(JSON.stringify(data, undefined, 2))
-            console.info(jsonHtml)
             that.runnerConfig = jsonHtml
             that.loading = false
           }, function () {
             that.loading = false
           }, '', '拉取收集器配置文件失败')
+          this.showRunnerConfigModal = true
         } else if (this.optName === 'logkitErrors') {
           let hasError = []
           let logkitError = {}

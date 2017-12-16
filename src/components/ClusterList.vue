@@ -27,6 +27,8 @@
     components: {MsgModel},
     data: function () {
       return {
+        url: '',
+        tag: '',
         total: 1,
         current: 1,
         loading: false,
@@ -204,18 +206,21 @@
       }
     },
     created: function () {
-      this.fetchData()
+      this.reLoad()
     },
     watch: {
-      '$route': 'fetchData'
+      '$route': 'reLoad'
     },
     methods: {
+      reLoad () {
+        this.url = this.$route.query.url
+        this.tag = this.$route.query.tag
+        this.fetchData()
+      },
       fetchData () {
         let that = this
         that.loading = true
-        let url = this.$route.query.url
-        let tag = this.$route.query.tag
-        that.request('getClusterSlaves', { url: url, tag: tag }, function (data) {
+        that.request('getClusterSlaves', { url: this.url, tag: this.tag }, function (data) {
           let allSlaves = {}
           data.forEach((ele) => {
             let color = normalColor
@@ -260,7 +265,14 @@
         console.info(param.row.tag)
       },
       addRunner (param, runnerType) {
-        console.info(param, runnerType)
+        this.$router.push({
+          name: 'create',
+          params: {
+            type: runnerType,
+            tag: param.row.tag,
+            url: param.row.url
+          }
+        })
       },
       selectedRunner (param, mgrName, runnerName) {
         if (mgrName === 'update') {

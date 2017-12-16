@@ -22,11 +22,14 @@
     components: {MsgModal},
     data: function () {
       return {
+        url: '',
+        tag: '',
         msgParam: {},
         loading: false,
         allRunners: [],
         tableData: [],
         tableColumns: [],
+        interval: undefined,
         tableColumnsData: [
           {
             title: '名称',
@@ -34,7 +37,8 @@
           },
           {
             title: '集群',
-            key: 'tag'
+            key: 'tag',
+            width: 100
           },
           {
             title: '机器',
@@ -69,11 +73,21 @@
           },
           {
             title: '读取(条/秒)',
-            key: 'readSpeed'
+            key: 'readSpeed',
+            render: (h, param) => {
+              let speed = param.row.readSpeed
+              let trend = param.row.readSpeedTrend
+              return this.getTrend(h, speed, trend)
+            }
           },
           {
             title: '读取(字节/秒)',
-            key: 'readSpeedKb'
+            key: 'readSpeedKb',
+            render: (h, param) => {
+              let speed = param.row.readSpeedKb
+              let trend = param.row.readSpeedTrendKb
+              return this.getTrend(h, speed, trend)
+            }
           },
           {
             title: '解析(成功/总)',
@@ -85,13 +99,18 @@
           },
           {
             title: '发送(条/秒)',
-            key: 'senderSpeed'
+            key: 'senderSpeed',
+            render: (h, param) => {
+              let speed = param.row.senderSpeed
+              let trend = param.row.senderTrend
+              return this.getTrend(h, speed, trend)
+            }
           },
           {
             title: '查看',
             key: 'show',
             align: 'center',
-            width: 80,
+            width: 70,
             render: (h, param) => {
               let color = 'black'
               let type = 'checkmark-circled'
@@ -109,6 +128,13 @@
                 on: {
                   'on-click': (name) => {
                     this.showModal(name, param)
+                  },
+                  'on-visible-change': (isOpen) => {
+                    if (isOpen) {
+                      this.destroyInterval()
+                    } else {
+                      this.setInterval()
+                    }
                   }
                 }
               }, [
@@ -162,7 +188,7 @@
             title: '操作',
             key: 'opt',
             align: 'center',
-            width: 80,
+            width: 70,
             render: (h, param) => {
               return h('Dropdown', {
                 props: {
@@ -173,6 +199,13 @@
                 on: {
                   'on-click': (name) => {
                     this.runnerManger(name, param)
+                  },
+                  'on-visible-change': (isOpen) => {
+                    if (isOpen) {
+                      this.destroyInterval()
+                    } else {
+                      this.setInterval()
+                    }
                   }
                 }
               }, [
@@ -251,19 +284,41 @@
       }
     },
     created: function () {
-      this.fetchData()
+      this.reLoad()
+      this.setInterval()
+    },
+    beforeRouteLeave (to, from, next) {
+      this.destroyInterval()
+      return next()
     },
     watch: {
-      '$route': 'fetchData'
+      '$route': 'reLoad'
     },
     methods: {
-      fetchData () {
+      reLoad () {
+        this.url = this.$route.query.url
+        this.tag = this.$route.query.tag
         this.initTableColumns()
+        this.fetchData()
+      },
+      setInterval () {
+        if (this.interval) {
+          clearInterval(this.interval)
+        }
+        let _this = this
+        this.interval = setInterval(() => {
+          _this.fetchData()
+        }, 5000)
+      },
+      destroyInterval () {
+        if (this.interval) {
+          clearInterval(this.interval)
+        }
+      },
+      fetchData () {
         let that = this
-        that.loading = true
-        let url = this.$route.query.url
-        let tag = this.$route.query.tag
-        that.request('getSlavesRunnerStatus', { url: url, tag: tag }, function (data) {
+        if (!this.interval) this.loading = true
+        that.request('getSlavesRunnerStatus', { url: this.url, tag: this.tag }, function (data) {
           let allRunners = []
           for (let url in data) {
             let tag = data[url].tag
@@ -361,6 +416,28 @@
         } else if (name === 'delete') {
           this.showModal('removeRunner', param)
         }
+      },
+      getTrend (h, speed, trend) {
+        let color = 'orange'
+        let icon = 'minus'
+        if (trend === 'up') {
+          color = 'red'
+          icon = 'arrow-up-c'
+        } else if (trend === 'down') {
+          color = 'green'
+          icon = 'arrow-down-c'
+        }
+        return h('Span', [
+          h('Span', {
+            style: {marginRight: '3px'}
+          }, speed),
+          h('Icon', {
+            props: {
+              color: color,
+              type: icon
+            }
+          })
+        ])
       },
       showModal (optName, param) {
         this.msgParam = {time: new Date(), optName: optName, param: param}

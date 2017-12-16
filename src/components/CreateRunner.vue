@@ -19,6 +19,24 @@
         tag: '',
         current: 0
       }
+    },
+    created: function () {
+      this.reLoad()
+    },
+    watch: {
+      '$route': 'reLoad'
+    },
+    methods: {
+      reLoad () {
+        this.url = this.$route.params.url
+        this.tag = this.$route.params.tag
+        this.type = this.$route.params.type
+        if (this.type !== 'log' && this.type !== 'metric') {
+          this.$Notice.error({
+            title: '未知收集器类型 ' + this.type
+          })
+        }
+      }
     }
   }
 </script>

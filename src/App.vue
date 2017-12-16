@@ -32,6 +32,8 @@
     components: {NavBar},
     data: function () {
       return {
+        url: '',
+        tag: '',
         bread: [],
         version: '',
         model: 'show',
@@ -39,28 +41,36 @@
       }
     },
     created: function () {
-      this.updateBread()
       let that = this
       this.request('getLogkitVersion', {}, function (data) {
         that.version = data.version
       }, function () {}, '', '获取 logkit version 失败')
+      this.reLoad()
     },
     watch: {
-      '$route': 'updateBread'
+      '$route': 'reLoad'
     },
     methods: {
-      updateBread: function () {
+      reLoad () {
+        this.tag = this.$route.query.tag
+        this.url = this.$route.query.url
+        let fullPath = this.$route.fullPath
+        console.info(fullPath)
+        if (fullPath.indexOf('create') === -1) {
+          this.model = 'show'
+        } else {
+          this.model = 'edit'
+        }
+        this.updateBread()
+      },
+      updateBread () {
         let bread = []
-        let tag = this.$route.query.tag
-        let url = this.$route.query.url
         let fullPath = this.$route.fullPath.split('?')[0]
         let urlSplit = fullPath.split('/')
         let curUrl = ''
+        let url = this.url
+        let tag = this.tag
         urlSplit.map((ele, index) => {
-          if (ele === 'create') {
-            this.model = 'edit'
-          }
-          console.info(index, ele)
           if (index === 0) {
             bread.push({url: '/', name: 'Home'})
           } else if (index === 1 && ele !== '') {
